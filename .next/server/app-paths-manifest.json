@@ -1,0 +1,10 @@
+{
+  "/api/backup/get-path/route": "app/api/backup/get-path/route.js",
+  "/api/years/route": "app/api/years/route.js",
+  "/api/chapters/route": "app/api/chapters/route.js",
+  "/api/year-lock-status/[year]/route": "app/api/year-lock-status/[year]/route.js",
+  "/api/chapters/[id]/route": "app/api/chapters/[id]/route.js",
+  "/api/form2/chapter/[chapterId]/previous-year-balance/route": "app/api/form2/chapter/[chapterId]/previous-year-balance/route.js",
+  "/api/records/[id]/attachments/route": "app/api/records/[id]/attachments/route.js",
+  "/dashboard/page": "app/dashboard/page.js"
+}
