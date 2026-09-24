@@ -1,0 +1,8 @@
+{
+  "backupPath": "C:\\backups",
+  "enabled": false,
+  "schedule": "daily",
+  "retention": 30,
+  "hour": 2,
+  "minute": 0
+}
