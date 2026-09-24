@@ -1,0 +1,59 @@
+// C:\Biblio_Ylikou_NEW\src\app\api\get-chapter-materials\route.ts
+import { NextRequest, NextResponse } from 'next/server'
+import fs from 'fs'
+import path from 'path'
+
+export async function POST(request: NextRequest) {
+    try {
+        const body = await request.json()
+        const { filePath, chapterCode, page = 1, limit = 50, year } = body
+
+        if (!filePath || !chapterCode) {
+            return NextResponse.json(
+                { error: 'File path and chapter code are required' },
+                { status: 400 }
+            )
+        }
+
+        // Find the corresponding JSON data file
+        const uploadDir = path.join(process.cwd(), 'uploads')
+        const files = fs.readdirSync(uploadDir)
+        const jsonFiles = files.filter(f => f.startsWith('material_data_') && f.endsWith('.json'))
+
+        if (jsonFiles.length === 0) {
+            return NextResponse.json(
+                { error: 'No material data found' },
+                { status: 404 }
+            )
+        }
+
+        // Get the latest data file
+        const latestFile = jsonFiles.sort().pop()
+        const dataPath = path.join(uploadDir, latestFile!)
+        const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
+
+        const materials = data.materialsByChapter?.[chapterCode] || []
+        const total = materials.length
+
+        // Pagination
+        const startIndex = (page - 1) * limit
+        const endIndex = Math.min(startIndex + limit, total)
+        const paginatedMaterials = materials.slice(startIndex, endIndex)
+
+        return NextResponse.json({
+            success: true,
+            materials: paginatedMaterials,
+            total,
+            hasMore: endIndex < total,
+            page,
+            limit
+        })
+
+    } catch (error) {
+        console.error('Error getting chapter materials:', error)
+        return NextResponse.json(
+            { error: 'Failed to get materials: ' + (error as Error).message },
+            { status: 500 }
+        )
+    }
+}
