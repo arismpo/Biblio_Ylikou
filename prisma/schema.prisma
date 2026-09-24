@@ -1,0 +1,126 @@
+// C:\Biblio_Ylikou_NEW\prisma\schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Chapter {
+  id                Int          @id @default(autoincrement())
+  name              String
+  description       String?
+  page              String?
+  year              Int
+  position          Int          @default(0)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @default(now())
+  onomastika        Onomastiko[]
+  records           Record[]
+  yearlyTotals      YearlyTotal[] // ✅ ΠΡΟΣΘΗΚΗ: Αντίστροφη σχέση για το YearlyTotal
+
+  @@map("Chapter")
+}
+
+model Onomastiko {
+  id                Int          @id @default(autoincrement())
+  name              String
+  number            String?
+  position          Int          @default(0)
+  page              Int?
+  infos             String?
+  highlighted       Boolean      @default(false)
+  chapterId         Int
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @default(now())
+  chapter           Chapter      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  entries           Entry[]
+  yearlyTotals      YearlyTotal[] // ✅ ΠΡΟΣΘΗΚΗ: Αντίστροφη σχέση για το YearlyTotal
+
+  @@map("Onomastiko")
+}
+
+model Record {
+  id                Int          @id @default(autoincrement())
+  aa                Int?
+  month             String
+  day               Int
+  description       String
+  document          String?
+  year              Int
+  chapterId         Int
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @default(now())
+  page              Int?
+  chapter           Chapter      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  entries           Entry[]
+  attachments       Attachment[]
+
+  @@map("Record")
+}
+
+model Entry {
+  id                Int          @id @default(autoincrement())
+  debit             Float?
+  credit            Float?
+  recordId          Int
+  onomastikoId      Int
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @default(now())
+  record            Record       @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  onomastiko        Onomastiko   @relation(fields: [onomastikoId], references: [id], onDelete: Cascade)
+
+  @@map("Entry")
+}
+
+model Attachment {
+  id                Int          @id @default(autoincrement())
+  filename          String
+  mimeType          String
+  size              Int
+  data              Bytes
+  recordId          Int
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @default(now())
+  record            Record       @relation(fields: [recordId], references: [id], onDelete: Cascade)
+
+  @@map("Attachment")
+}
+
+model YearlyTotal {
+  id                Int          @id @default(autoincrement())
+  year              Int
+  chapterId         Int
+  onomastikoId      Int
+  totalDebit        Float        @default(0)
+  totalCredit       Float        @default(0)
+  balance           Float        @default(0)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @default(now())
+  chapter           Chapter      @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  onomastiko        Onomastiko   @relation(fields: [onomastikoId], references: [id], onDelete: Cascade)
+
+  @@unique([year, chapterId, onomastikoId])
+  @@map("yearly_totals")
+}
+
+model YearLock {
+  year              Int          @id
+  locked            Boolean      @default(false)
+  lockedAt          DateTime?
+  lockedBy          String?
+
+  @@map("YearLock")
+}
+
+model User {
+  id                Int          @id @default(autoincrement())
+  username          String       @unique
+  password          String
+  role              String       @default("user")
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @default(now())
+
+  @@map("User")
+}
